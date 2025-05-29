@@ -1,0 +1,744 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CFN for admin-console-2025 QS Objects",
+    "Parameters": {
+        "adminarn": {
+            "Type": "String",
+            "MinLength": 1,
+            "Description": "Enter arn of your quicksight admin. for exmple: arn:aws:quicksight:us-east-1:accountid:user/default/admin"
+        }
+    },
+    "Resources": {
+        "AdminConsoleCFNMain": {
+            "Properties": {
+                "AwsAccountId": {
+                    "Fn::Sub": "${AWS::AccountId}"
+                },
+                "DataSetId": "Admin-Console-CFN-Main-2025",
+                "DataSetRefreshProperties": {
+                    "FailureConfiguration": {
+                        "EmailAlert": {
+                            "AlertStatus": "ENABLED"
+                        }
+                    }
+                },
+                "DataSetUsageConfiguration": {
+                    "DisableUseAsDirectQuerySource": false,
+                    "DisableUseAsImportedSource": false
+                },
+                "FieldFolders": {},
+                "ImportMode": "SPICE",
+                "LogicalTableMap": {
+                    "Admin-Console-CFN-Main-2025-logic": {
+                        "Alias": "CFN-Main",
+                        "DataTransforms": [
+                            {
+                                "ProjectOperation": {
+                                    "ProjectedColumns": [
+                                        "accountid",
+                                        "user_name",
+                                        "user_arn",
+                                        "awsregion",
+                                        "dashboard_name",
+                                        "dashboardid",
+                                        "event_time",
+                                        "last_view_dashboard_time",
+                                        "last_event_time",
+                                        "first_event_time",
+                                        "namespace",
+                                        "group",
+                                        "email",
+                                        "role",
+                                        "identity_type",
+                                        "owner_viewer",
+                                        "ownership"
+                                    ]
+                                }
+                            }
+                        ],
+                        "Source": {
+                            "PhysicalTableId": "Admin-Console-CFN-Main-physical"
+                        }
+                    }
+                },
+                "Name": "Admin-Console-CFN-Main-2025",
+                "Permissions": [
+                    {
+                        "Principal": {
+                            "Ref": "adminarn"
+                        },
+                        "Actions": [
+                            "quicksight:UpdateDataSetPermissions",
+                            "quicksight:DescribeDataSet",
+                            "quicksight:DescribeDataSetPermissions",
+                            "quicksight:PassDataSet",
+                            "quicksight:DescribeIngestion",
+                            "quicksight:ListIngestions",
+                            "quicksight:UpdateDataSet",
+                            "quicksight:DeleteDataSet",
+                            "quicksight:CreateIngestion",
+                            "quicksight:CancelIngestion"
+                        ]
+                    }
+                ],
+                "PhysicalTableMap": {
+                    "Admin-Console-CFN-Main-physical": {
+                        "CustomSql": {
+                            "Columns": [
+                                {
+                                    "Name": "accountid",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "user_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "user_arn",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "awsregion",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "dashboard_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "dashboardid",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "event_time",
+                                    "Type": "DATETIME"
+                                },
+                                {
+                                    "Name": "last_view_dashboard_time",
+                                    "Type": "DATETIME"
+                                },
+                                {
+                                    "Name": "last_event_time",
+                                    "Type": "DATETIME"
+                                },
+                                {
+                                    "Name": "first_event_time",
+                                    "Type": "DATETIME"
+                                },
+                                {
+                                    "Name": "namespace",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "group",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "email",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "role",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "identity_type",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "owner_viewer",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "ownership",
+                                    "Type": "STRING"
+                                }
+                            ],
+                            "DataSourceArn": {
+                                "Fn::GetAtt": [
+                                    "qsdatasource",
+                                    "Arn"
+                                ]
+                            },
+                            "Name": "CFN-Main",
+                            "SqlQuery": "SELECT COALESCE(\"d\".\"accountid\", \"g\".\"account_id\") \"accountid\",\n\tCOALESCE(\"g\".\"user\", \"d\".\"user_name\") \"user_name\",\n\tCOALESCE(\"g\".\"user_arn\", \"d\".\"user_arn\") \"user_arn\",\n\t\"d\".\"awsregion\",\n\treplace(\"d\".\"dashboard_name\", '\"', '') \"dashboard_name\",\n\t\"d\".\"dashboardid\",\n\t\"d\".\"event_time\",\n\t\"dv1\".\"last_view_dashboard_time\",\n\t\"ev1\".\"last_event_time\",\n\t\"ev1\".\"first_event_time\",\n\t\"g\".\"namespace\",\n\t\"g\".\"group\",\n\t\"g\".\"email\",\n\t\"g\".\"role\",\n\tCOALESCE(\"g\".\"identity_type\", 'QUICKSIGHT') \"identity_type\",\n\t\"do1\".\"principal_name\" \"owner_viewer\",\n\t\"do1\".\"ownership\" \"ownership\"\nFROM (\n\t\t(\n\t\t\t(\n\t\t\t\tSELECT \"useridentity\".\"accountid\",\n\t\t\t\t\t\"useridentity\".\"type\",\n\t\t\t\t\t\"split_part\"(\n\t\t\t\t\t\t\"useridentity\".\"sessioncontext\".\"sessionissuer\".\"arn\",\n\t\t\t\t\t\t'/',\n\t\t\t\t\t\t2\n\t\t\t\t\t) \"assumed_role\",\n\t\t\t\t\t\"useridentity\".\"arn\" \"user_arn\",\n\t\t\t\t\tCOALESCE(\n\t\t\t\t\t\t\"useridentity\".\"username\",\n\t\t\t\t\t\t\"concat\"(\n\t\t\t\t\t\t\t\"split_part\"(\"useridentity\".\"arn\", '/', 2),\n\t\t\t\t\t\t\t'/',\n\t\t\t\t\t\t\t\"split_part\"(\"useridentity\".\"arn\", '/', 3)\n\t\t\t\t\t\t)\n\t\t\t\t\t) \"user_name\",\n\t\t\t\t\t\"awsregion\",\n\t\t\t\t\t\"split_part\"(\n\t\t\t\t\t\t\"split_part\"(\"serviceeventdetails\", 'dashboardName\":', 2),\n\t\t\t\t\t\t',',\n\t\t\t\t\t\t1\n\t\t\t\t\t) \"dashboard_name\",\n\t\t\t\t\t\"split_part\"(\n\t\t\t\t\t\t\"split_part\"(\n\t\t\t\t\t\t\t\"split_part\"(\n\t\t\t\t\t\t\t\t\"split_part\"(\"serviceeventdetails\", 'dashboardId\":', 2),\n\t\t\t\t\t\t\t\t',',\n\t\t\t\t\t\t\t\t1\n\t\t\t\t\t\t\t),\n\t\t\t\t\t\t\t'dashboard/',\n\t\t\t\t\t\t\t2\n\t\t\t\t\t\t),\n\t\t\t\t\t\t'\"}',\n\t\t\t\t\t\t1\n\t\t\t\t\t) \"dashboardId\",\n\t\t\t\t\t\"date_parse\"(\"eventtime\", '%Y-%m-%dT%H:%i:%sZ') \"event_time\"\n\t\t\t\tFROM \"admin-console-2025\".\"cloudtrail_logs_pp\"\n\t\t\t\tWHERE \"eventsource\" = 'quicksight.amazonaws.com'\n\t\t\t\t\tAND \"eventname\" = 'GetDashboard'\n\t\t\t\t\tAND (\n\t\t\t\t\t\t\"date_trunc\"('day', \"date_parse\"(\"timestamp\", '%Y/%m/%d')) > CAST((current_date - INTERVAL '99' DAY) AS date)\n\t\t\t\t\t)\n\t\t\t\tGROUP BY 1,\n\t\t\t\t\t2,\n\t\t\t\t\t3,\n\t\t\t\t\t4,\n\t\t\t\t\t5,\n\t\t\t\t\t6,\n\t\t\t\t\t7,\n\t\t\t\t\t8,\n\t\t\t\t\t9\n\t\t\t) d\n\t\t\tleft join (\n\t\t\t\tSELECT \"useridentity\".\"arn\" \"user_arn\",\n\t\t\t\t\tmax(\"date_parse\"(\"eventtime\", '%Y-%m-%dT%H:%i:%sZ')) \"last_view_dashboard_time\"\n\t\t\t\tFROM \"admin-console-2025\".\"cloudtrail_logs_pp\"\n\t\t\t\tWHERE \"eventsource\" = 'quicksight.amazonaws.com'\n\t\t\t\t\tAND \"eventname\" = 'GetDashboard'\n\t\t\t\t\tAND (\n\t\t\t\t\t\t\"date_trunc\"('day', \"date_parse\"(\"timestamp\", '%Y/%m/%d')) > CAST((current_date - INTERVAL '99' DAY) AS date)\n\t\t\t\t\t)\n\t\t\t\tGROUP BY 1\n\t\t\t) dv1 ON \"d\".\"user_arn\" = \"dv1\".\"user_arn\"\n\t\t\tleft join (\n\t\t\t\tSELECT \"useridentity\".\"arn\" \"user_arn\",\n\t\t\t\tmin(\"date_parse\"(\"eventtime\", '%Y-%m-%dT%H:%i:%sZ')) \"first_event_time\",\n\t\t\t\t\tmax(\"date_parse\"(\"eventtime\", '%Y-%m-%dT%H:%i:%sZ')) \"last_event_time\"\n\t\t\t\tFROM \"admin-console-2025\".\"cloudtrail_logs_pp\"\n\t\t\t\tWHERE \"eventsource\" = 'quicksight.amazonaws.com'\n\t\t\t\t\tAND (\n\t\t\t\t\t\t\"date_trunc\"('day', \"date_parse\"(\"timestamp\", '%Y/%m/%d')) > CAST((current_date - INTERVAL '99' DAY) AS date)\n\t\t\t\t\t)\n\t\t\t\tGROUP BY 1\n\t\t\t) ev1 on \"d\".\"user_arn\" = \"ev1\".\"user_arn\"\n\t\t\tFULL JOIN \"admin-console-2025\".group_membership g ON \"d\".\"user_arn\" = \"g\".\"user_arn\"\n\t\t\tOR (\n\t\t\t\t(\"d\".\"accountid\" = \"g\".\"account_id\")\n\t\t\t\tAND (\"d\".\"user_name\" = \"g\".\"user\")\n\t\t\t)\n\t\t)\n\t\tLEFT JOIN (\n\t\t\tSELECT \"account_id\",\n\t\t\t\t\"aws_region\",\n\t\t\t\t\"object_id\",\n\t\t\t\t\"object_name\",\n\t\t\t\t\"principal_type\",\n\t\t\t\t\"principal_name\",\n\t\t\t\t\"arn\",\n\t\t\t\t\"namespace\",\n\t\t\t\t(\n\t\t\t\t\tCASE\n\t\t\t\t\t\tWHEN (\"strpos\"(\"permissions\", 'Delete') <> 0) THEN 'Owner' ELSE 'Viewer'\n\t\t\t\t\tEND\n\t\t\t\t) \"Ownership\"\n\t\t\tFROM \"admin-console-2025\".object_access\n\t\t\tWHERE (\"object_type\" = 'dashboard')\n\t\t\t\tAND (\"principal_type\" in ('group', 'user'))\n\t\t\tGROUP BY 1,\n\t\t\t\t2,\n\t\t\t\t3,\n\t\t\t\t4,\n\t\t\t\t5,\n\t\t\t\t6,\n\t\t\t\t7,\n\t\t\t\t8,\n\t\t\t\t9\n\t\t) do1 ON \"d\".\"dashboardid\" = \"do1\".\"object_id\"\n\t\tAND \"do1\".\"arn\" = \"d\".\"user_arn\"\n\t\tOR (\n\t\t\t(\n\t\t\t\t(\n\t\t\t\t\t(\n\t\t\t\t\t\t(\"d\".\"accountid\" = \"do1\".\"account_id\")\n\t\t\t\t\t\tAND (\"d\".\"awsregion\" = \"do1\".\"aws_region\")\n\t\t\t\t\t)\n\t\t\t\t\tAND (\"d\".\"dashboardid\" = \"do1\".\"object_id\")\n\t\t\t\t)\n\t\t\t\tAND (\n\t\t\t\t\t\"do1\".\"principal_name\" = \"g\".\"group\"\n\t\t\t\t\tOR \"do1\".\"principal_name\" = \"d\".\"user_name\"\n\t\t\t\t)\n\t\t\t)\n\t\t\tAND \"do1\".\"namespace\" = \"g\".\"namespace\"\n\t\t)\n\t)\nGROUP BY 1,\n\t2,\n\t3,\n\t4,\n\t5,\n\t6,\n\t7,\n\t8,\n\t9,\n\t10,\n\t11,\n\t12,\n\t13,\n\t14,\n\t15,\n\t16,\n\t17"
+                        }
+                    }
+                }
+            },
+            "Type": "AWS::QuickSight::DataSet",
+            "DependsOn": [
+                "qsdatasource"
+            ]
+        },
+        "AdminConsoleGroupMembership": {
+            "Properties": {
+                "AwsAccountId": {
+                    "Fn::Sub": "${AWS::AccountId}"
+                },
+                "DataSetId": "Admin-Console-Group-Membership-2025",
+                "DataSetRefreshProperties": {
+                    "FailureConfiguration": {
+                        "EmailAlert": {
+                            "AlertStatus": "DISABLED"
+                        }
+                    }
+                },
+                "DataSetUsageConfiguration": {
+                    "DisableUseAsDirectQuerySource": false,
+                    "DisableUseAsImportedSource": false
+                },
+                "ImportMode": "SPICE",
+                "LogicalTableMap": {
+                    "Admin-Console-Group-Membership-logic": {
+                        "Alias": "group_membership",
+                        "DataTransforms": [
+                            {
+                                "ProjectOperation": {
+                                    "ProjectedColumns": [
+                                        "account_id",
+                                        "namespace",
+                                        "group",
+                                        "user",
+                                        "email",
+                                        "role",
+                                        "identity_type"
+                                    ]
+                                }
+                            }
+                        ],
+                        "Source": {
+                            "PhysicalTableId": "Admin-Console-Group-Membership-physical"
+                        }
+                    }
+                },
+                "Name": "Admin-Console-Group-Membership-2025",
+                "Permissions": [
+                    {
+                        "Principal": {
+                            "Ref": "adminarn"
+                        },
+                        "Actions": [
+                            "quicksight:UpdateDataSetPermissions",
+                            "quicksight:DescribeDataSet",
+                            "quicksight:DescribeDataSetPermissions",
+                            "quicksight:PassDataSet",
+                            "quicksight:DescribeIngestion",
+                            "quicksight:ListIngestions",
+                            "quicksight:UpdateDataSet",
+                            "quicksight:DeleteDataSet",
+                            "quicksight:CreateIngestion",
+                            "quicksight:CancelIngestion"
+                        ]
+                    }
+                ],
+                "PhysicalTableMap": {
+                    "Admin-Console-Group-Membership-physical": {
+                        "CustomSql": {
+                            "Columns": [
+                                {
+                                    "Name": "account_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "namespace",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "group",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "user",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "email",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "role",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "identity_type",
+                                    "Type": "STRING"
+                                }
+                            ],
+                            "DataSourceArn": {
+                                "Fn::GetAtt": [
+                                    "qsdatasource",
+                                    "Arn"
+                                ]
+                            },
+                            "Name": "group_membership",
+                            "SqlQuery": "select * from \"admin-console-2025\".group_membership"
+                        }
+                    }
+                }
+            },
+            "Type": "AWS::QuickSight::DataSet",
+            "DependsOn": [
+                "qsdatasource"
+            ]
+        },
+        "AdminConsoleObjectAccess": {
+            "Properties": {
+                "AwsAccountId": {
+                    "Fn::Sub": "${AWS::AccountId}"
+                },
+                "DataSetId": "Admin-Console-Object-Access-2025",
+                "DataSetRefreshProperties": {
+                    "FailureConfiguration": {
+                        "EmailAlert": {
+                            "AlertStatus": "DISABLED"
+                        }
+                    }
+                },
+                "DataSetUsageConfiguration": {
+                    "DisableUseAsDirectQuerySource": false,
+                    "DisableUseAsImportedSource": false
+                },
+                "ImportMode": "SPICE",
+                "LogicalTableMap": {
+                    "Admin-Console-Object-Access-logic": {
+                        "Alias": "Admin-Console-Object-Access",
+                        "DataTransforms": [
+                            {
+                                "TagColumnOperation": {
+                                    "ColumnName": "aws_region",
+                                    "Tags": [
+                                        {
+                                            "ColumnGeographicRole": "STATE"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "ProjectOperation": {
+                                    "ProjectedColumns": [
+                                        "account_id",
+                                        "aws_region",
+                                        "object_type",
+                                        "object_name",
+                                        "object_id",
+                                        "principal_type",
+                                        "principal_name",
+                                        "permissions",
+                                        "namespace",
+                                        "user_aws_account_id",
+                                        "group",
+                                        "user",
+                                        "email",
+                                        "role",
+                                        "identity_type"
+                                    ]
+                                }
+                            }
+                        ],
+                        "Source": {
+                            "PhysicalTableId": "Admin-Console-Object-Access-physical"
+                        }
+                    }
+                },
+                "Name": "Admin-Console-Object-Access-2025",
+                "Permissions": [
+                    {
+                        "Principal": {
+                            "Ref": "adminarn"
+                        },
+                        "Actions": [
+                            "quicksight:UpdateDataSetPermissions",
+                            "quicksight:DescribeDataSet",
+                            "quicksight:DescribeDataSetPermissions",
+                            "quicksight:PassDataSet",
+                            "quicksight:DescribeIngestion",
+                            "quicksight:ListIngestions",
+                            "quicksight:UpdateDataSet",
+                            "quicksight:DeleteDataSet",
+                            "quicksight:CreateIngestion",
+                            "quicksight:CancelIngestion"
+                        ]
+                    }
+                ],
+                "PhysicalTableMap": {
+                    "Admin-Console-Object-Access-physical": {
+                        "CustomSql": {
+                            "Columns": [
+                                {
+                                    "Name": "account_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "aws_region",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "object_type",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "object_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "object_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "principal_type",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "principal_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "permissions",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "namespace",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "user_aws_account_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "group",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "user",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "email",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "role",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "identity_type",
+                                    "Type": "STRING"
+                                }
+                            ],
+                            "DataSourceArn": {
+                                "Fn::GetAtt": [
+                                    "qsdatasource",
+                                    "Arn"
+                                ]
+                            },
+                            "Name": "Admin-Console-Object-Access",
+                            "SqlQuery": "select o.account_id, o.aws_region, o.object_type, o.object_name, o.object_id, o.principal_type, o.principal_name,\no.permissions, g.namespace, g.account_id as user_aws_account_id,\ng.\"group\", g.\"user\", g.email, g.\"role\", g.identity_type from \"admin-console-2025\".object_access as o \nfull outer join\n\"admin-console-2025\".group_membership as g\non o.account_id=g.account_id AND o.principal_name=g.\"group\" AND o.namespace=g.namespace\nwhere o.principal_type in ('group')\nunion all\nselect o.account_id, o.aws_region, o.object_type, o.object_name, o.object_id, o.principal_type, o.principal_name,\no.permissions, g.namespace, g.account_id as user_aws_account_id,\ng.\"group\", g.\"user\", g.email, g.\"role\", g.identity_type\nfrom \"admin-console-2025\".object_access o\nfull outer join\n\"admin-console-2025\".group_membership g\non o.account_id=g.account_id AND o.principal_name=g.user AND o.namespace=g.namespace\nwhere o.principal_type in ('user')"
+                        }
+                    }
+                }
+            },
+            "Type": "AWS::QuickSight::DataSet",
+            "DependsOn": [
+                "qsdatasource"
+            ]
+        },
+        "AdminConsoleDatasetInfo": {
+            "Properties": {
+                "AwsAccountId": {
+                    "Fn::Sub": "${AWS::AccountId}"
+                },
+                "DataSetId": "Admin-Console-dataset-info-2025",
+                "DataSetRefreshProperties": {
+                    "FailureConfiguration": {
+                        "EmailAlert": {
+                            "AlertStatus": "DISABLED"
+                        }
+                    }
+                },
+                "DataSetUsageConfiguration": {
+                    "DisableUseAsDirectQuerySource": false,
+                    "DisableUseAsImportedSource": false
+                },
+                "ImportMode": "SPICE",
+                "LogicalTableMap": {
+                    "Admin-Console-dataset-info-logic": {
+                        "Alias": "Admin-Console-dataset-info",
+                        "DataTransforms": [
+                            {
+                                "TagColumnOperation": {
+                                    "ColumnName": "aws_region",
+                                    "Tags": [
+                                        {
+                                            "ColumnGeographicRole": "STATE"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "ProjectOperation": {
+                                    "ProjectedColumns": [
+                                        "aws_region",
+                                        "dashboard_name",
+                                        "dashboardid",
+                                        "analysis",
+                                        "analysis_id",
+                                        "dataset_name",
+                                        "dataset_id",
+                                        "lastupdatedtime",
+                                        "data_source_name",
+                                        "data_source_id",
+                                        "catalog",
+                                        "sqlname/schema",
+                                        "sqlquery/table_name",
+                                        "datasetname",
+                                        "datasetid",
+                                        "columnname",
+                                        "columntype",
+                                        "columndesc"
+                                    ]
+                                }
+                            }
+                        ],
+                        "Source": {
+                            "PhysicalTableId": "Admin-Console-dataset-info-physical"
+                        }
+                    }
+                },
+                "Name": "Admin-Console-dataset-info-2025",
+                "Permissions": [
+                    {
+                        "Principal": {
+                            "Ref": "adminarn"
+                        },
+                        "Actions": [
+                            "quicksight:UpdateDataSetPermissions",
+                            "quicksight:DescribeDataSet",
+                            "quicksight:DescribeDataSetPermissions",
+                            "quicksight:PassDataSet",
+                            "quicksight:DescribeIngestion",
+                            "quicksight:ListIngestions",
+                            "quicksight:UpdateDataSet",
+                            "quicksight:DeleteDataSet",
+                            "quicksight:CreateIngestion",
+                            "quicksight:CancelIngestion"
+                        ]
+                    }
+                ],
+                "PhysicalTableMap": {
+                    "Admin-Console-dataset-info-physical": {
+                        "CustomSql": {
+                            "Columns": [
+                                {
+                                    "Name": "aws_region",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "dashboard_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "dashboardid",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "analysis",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "analysis_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "dataset_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "dataset_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "lastupdatedtime",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "data_source_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "data_source_id",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "catalog",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "sqlname/schema",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "sqlquery/table_name",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "datasetname",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "datasetid",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "columnname",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "columntype",
+                                    "Type": "STRING"
+                                },
+                                {
+                                    "Name": "columndesc",
+                                    "Type": "STRING"
+                                }
+                            ],
+                            "DataSourceArn": {
+                                "Fn::GetAtt": [
+                                    "qsdatasource",
+                                    "Arn"
+                                ]
+                            },
+                            "Name": "Admin-Console-dataset-info",
+                            "SqlQuery": "SELECT * \nFROM \"admin-console-2025\".datasets_info i \njoin \"admin-console-2025\".data_dict d\non i.dataset_id = d.datasetid"
+                        }
+                    }
+                }
+            },
+            "Type": "AWS::QuickSight::DataSet",
+            "DependsOn": [
+                "qsdatasource"
+            ]
+        },
+        "adminconsoleanalysis": {
+            "Type": "AWS::QuickSight::Analysis",
+            "DependsOn": [
+                "qsdatasource",
+                "AdminConsoleGroupMembership",
+                "AdminConsoleCFNMain",
+                "AdminConsoleObjectAccess",
+                "AdminConsoleDatasetInfo"
+            ],
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "AnalysisId": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "admin-console-analysis-2025",
+                            {
+                                "Ref": "AWS::AccountId"
+                            }
+                        ]
+                    ]
+                },
+                "Name": "admin-console-analysis-2025",
+                "Permissions": [
+                    {
+                        "Actions": [
+                            "quicksight:RestoreAnalysis",
+                            "quicksight:UpdateAnalysisPermissions",
+                            "quicksight:DeleteAnalysis",
+                            "quicksight:DescribeAnalysisPermissions",
+                            "quicksight:QueryAnalysis",
+                            "quicksight:DescribeAnalysis",
+                            "quicksight:UpdateAnalysis"
+                        ],
+                        "Principal": {
+                            "Ref": "adminarn"
+                        }
+                    }
+                ],
+                "SourceEntity": {
+                    "SourceTemplate": {
+                        "Arn": "arn:aws:quicksight:us-east-1:499080683179:template/admin-console-analysis-template-public-2025",
+                        "DataSetReferences": [
+                            {
+                                "DataSetArn": {
+                                    "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:dataset/Admin-Console-Group-Membership-2025"
+                                },
+                                "DataSetPlaceholder": "Admin-Console-Group-Membership"
+                            },
+                            {
+                                "DataSetArn": {
+                                    "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:dataset/Admin-Console-CFN-Main-2025"
+                                },
+                                "DataSetPlaceholder": "Admin-Console-CFN-Main"
+                            },
+                            {
+                                "DataSetArn": {
+                                    "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:dataset/Admin-Console-Object-Access-2025"
+                                },
+                                "DataSetPlaceholder": "Admin-Console-Object-Access"
+                            },
+                            {
+                                "DataSetArn": {
+                                    "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:dataset/Admin-Console-dataset-info-2025"
+                                },
+                                "DataSetPlaceholder": "Admin-Console-dataset-info"
+                            }
+                        ]
+                    }
+                },
+                "ThemeArn": "arn:aws:quicksight::aws:theme/MIDNIGHT"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "06becd2c-a300-4b74-9fb1-72e4986339f3"
+                }
+            }
+        },
+        "qsdatasource": {
+            "Type": "AWS::QuickSight::DataSource",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DataSourceId": "athena-admin-console-2025",
+                "Name": "athena-admin-console-2025",
+                "Permissions": [
+                    {
+                    "Actions": [
+                        "quicksight:UpdateDataSourcePermissions",
+                        "quicksight:DescribeDataSource",
+                        "quicksight:DescribeDataSourcePermissions",
+                        "quicksight:PassDataSource",
+                        "quicksight:UpdateDataSource",
+                        "quicksight:DeleteDataSource"
+                    ],
+                    "Principal": {
+                        "Ref": "adminarn"
+                    }
+                    }
+                ],
+                "SslProperties": {
+                    "DisableSsl": false
+                },
+                "DataSourceParameters": {
+                    "AthenaParameters": {
+                    "WorkGroup": "primary"
+                    }
+                },
+                "Type": "ATHENA"
+            },
+            "DeletionPolicy": "Delete",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                "id": "58b157d0-c1d9-43a2-9e91-8025139547e8"
+                }
+            }
+        }
+    }
+}
