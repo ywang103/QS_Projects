@@ -1,0 +1,9 @@
+key,value
+source_account,889399602426
+target_account,499080683179
+source_role_name,admin_role_for_499080683179
+target_role_name,qs-admin-target
+source_asset,d41a3c00-e581-4ec2-969c-4778562bedd3
+target_asset,admin_console_2025_demo
+source_admin_user,Administrator/wangzyn-Isengard
+target_admin_user,admin/wangzyn-Isengard
